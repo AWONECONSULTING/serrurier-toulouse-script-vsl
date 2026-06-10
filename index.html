@@ -602,12 +602,16 @@ html.js .legend-grid .lg-card:nth-child(1){transition-delay:.02s}
       },{rootMargin:'0px 0px -12% 0px', threshold:0.12});
       els.forEach(function(el){ io.observe(el); });
     } else { els.forEach(function(el){ el.classList.add('is-in'); }); }
+    var wrap=d.querySelector('.docwrap');
+    function fit(){ var vw=root.clientWidth, z=1; if(vw>=980){ z=Math.min(1.85, vw/870); } if(wrap){ wrap.style.zoom=z; } }
     var bar=d.querySelector('.progress');
-    if(bar){
-      var tick=function(){ var sc=root.scrollTop||d.body.scrollTop||0; var max=root.scrollHeight-root.clientHeight;
-        bar.style.width=(max>0?(sc/max*100):0)+'%'; };
-      d.addEventListener('scroll',tick,{passive:true}); window.addEventListener('resize',tick); tick();
-    }
+    var tick=function(){ var sc=root.scrollTop||d.body.scrollTop||0; var max=root.scrollHeight-root.clientHeight;
+      if(bar){ bar.style.width=(max>0?(sc/max*100):0)+'%'; } };
+    function onResize(){ fit(); tick(); }
+    fit();
+    d.addEventListener('scroll',tick,{passive:true});
+    window.addEventListener('resize',onResize);
+    tick();
   });
 })();
 </script>
