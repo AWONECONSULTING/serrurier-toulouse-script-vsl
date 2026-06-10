@@ -207,6 +207,19 @@ html.js .scene.is-in .scene__head{opacity:1;transform:none;}
   .toc-item:hover .toc-t{color:var(--gold);}
   .cta-wrap:hover .cta-mono svg{transform:scale(1.04);}
 }
+/* retour visuel au TOUCHER (mobile) — équivalent du survol PC */
+@media (hover:none){
+  .line.vo:active,.line.vo.tapped{transform:translateX(3px);border-left-color:var(--gold);
+    background:linear-gradient(90deg,rgba(132,77,251,.2),transparent 85%);}
+  .scene:active .scene__node,.scene.tapped .scene__node{transform:scale(1.08);
+    background:linear-gradient(150deg,var(--gold),var(--gold2) 60%,var(--violet) 140%)!important;
+    color:var(--ink)!important;border-color:transparent!important;
+    box-shadow:0 10px 28px rgba(255,190,0,.42),inset 0 1px 0 rgba(255,255,255,.4)!important;}
+  .chip:active,.chip.tapped{transform:translateY(-3px);border-color:var(--gold-bd);}
+  .lg-card:active,.lg-card.tapped{transform:translateY(-3px);border-color:var(--gold-bd);}
+  .toc-item:active,.toc-item.tapped{transform:translateX(5px);}
+  .toc-item:active .toc-t,.toc-item.tapped .toc-t{color:var(--gold);}
+}
 
 /* reduced motion + print : tout visible, aucune animation */
 @media (prefers-reduced-motion: reduce){
@@ -226,7 +239,8 @@ html.js .scene.is-in .scene__head{opacity:1;transform:none;}
 
 
 /* ======================= RESPONSIVE ======================= */
-html,body{overflow-x:hidden;}
+html,body{overflow-x:hidden;max-width:100%;overscroll-behavior-x:none;
+  touch-action:pan-y;touch-action:pan-y pinch-zoom;}
 .docwrap{width:min(210mm,100%);}
 
 /* marges & tailles fluides (desktop inchangé via les bornes hautes) */
@@ -289,7 +303,8 @@ body{background:#0D061C;
     radial-gradient(150% 620px at 50% 0, rgba(132,77,251,.26), rgba(132,77,251,0) 68%),
     radial-gradient(120% 380px at 50% 0, rgba(255,190,0,.05), rgba(255,190,0,0) 70%);
   background-repeat:no-repeat;}
-.docwrap{background:transparent;position:relative;z-index:1;overflow:visible;}
+.docwrap{background:transparent;position:relative;z-index:1;}
+@media (min-width:980px){ .docwrap{overflow:visible;} }
 .hero-glow{display:none;}   /* le halo vient désormais du fond plein cadre */
 
 /* ===== APPARITIONS AU FUR ET À MESURE ===== */
@@ -734,7 +749,7 @@ html{-webkit-tap-highlight-color:transparent;}
       if(wrap){ wrap.style.zoom=z;
         var dwR=wrap.getBoundingClientRect().width, W=dwR/(z||1);
         [].forEach.call(d.querySelectorAll('.fullbleed'),function(el){
-          if(dwR < vw-1){ el.style.width=(vw/z)+'px'; el.style.marginLeft=(-(vw/z - W)/2)+'px'; }
+          if(z>1 && dwR < vw-1){ el.style.width=(vw/z)+'px'; el.style.marginLeft=(-(vw/z - W)/2)+'px'; }
           else { el.style.width=''; el.style.marginLeft=''; }
         });
       } }
@@ -778,6 +793,17 @@ html{-webkit-tap-highlight-color:transparent;}
     function onResize(){ fit(); buildMarquee(); measureTimeline(); tick(); }
     fit(); buildMarquee(); measureTimeline();
     d.addEventListener('scroll',onScroll,{passive:true});
+    d.addEventListener('touchstart',function(){},{passive:true}); /* active :active sur iOS */
+    /* retour visuel fiable au toucher : classe .tapped ~220ms, annulée si on scrolle */
+    (function(){
+      var SEL='.line.vo,.scene,.chip,.lg-card,.toc-item', cur=null, sy=0;
+      function clear(d0){ if(cur){ var el=cur; cur=null; setTimeout(function(){ el.classList.remove('tapped'); }, d0||0); } }
+      d.addEventListener('touchstart',function(ev){ var t=ev.target.closest?ev.target.closest(SEL):null;
+        if(t){ if(cur)cur.classList.remove('tapped'); cur=t; t.classList.add('tapped'); sy=ev.touches[0].clientY; } },{passive:true});
+      d.addEventListener('touchmove',function(ev){ if(cur && Math.abs(ev.touches[0].clientY-sy)>8){ cur.classList.remove('tapped'); cur=null; } },{passive:true});
+      d.addEventListener('touchend',function(){ clear(220); },{passive:true});
+      d.addEventListener('touchcancel',function(){ clear(0); },{passive:true});
+    })();
     window.addEventListener('resize',onResize);
     tick();
     window.addEventListener('load',function(){ buildMarquee(); measureTimeline(); tick(); });
