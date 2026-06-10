@@ -176,16 +176,10 @@ html.js .toc .toc-phase:nth-child(2){transition-delay:.10s}
 html.js .toc .toc-phase:nth-child(3){transition-delay:.20s}
 html.js .toc .toc-phase:nth-child(4){transition-delay:.30s}
 
-/* scene orchestration (observe .scene) — le pilier se dessine */
-html.js .scene .scene__node{opacity:0;transform:scale(.5);
-  transition:opacity .5s ease,transform .6s cubic-bezier(.34,1.56,.64,1);}
+/* scene orchestration (observe .scene) */
 html.js .scene .scene__head{opacity:0;transform:translateY(10px);
   transition:opacity .6s ease .08s,transform .6s ease .08s;}
-html.js .scene .scene__rail::before{transform:translateX(-50%) scaleY(0);transform-origin:top;
-  transition:transform .7s cubic-bezier(.16,.84,.44,1) .15s;}
-html.js .scene.is-in .scene__node{opacity:1;transform:scale(1);}
 html.js .scene.is-in .scene__head{opacity:1;transform:none;}
-html.js .scene.is-in .scene__rail::before{transform:translateX(-50%) scaleY(1);}
 
 /* ===================== HOVER MICRO-INTERACTIONS ===================== */
 .scene__node{transition:transform .3s ease,box-shadow .3s ease;}
@@ -215,7 +209,6 @@ html.js .scene.is-in .scene__rail::before{transform:translateX(-50%) scaleY(1);}
   html.js .scene .scene__head{transform:none!important;}
   html.js .scene .scene__rail::before{transform:translateX(-50%) scaleY(1)!important;}
   html.js .mask>.mask-i{transform:none!important;}
-  .mq-track{animation:none!important;}
 }
 @media print{
   .progress{display:none!important;}*{animation:none!important;}
@@ -359,7 +352,6 @@ html.js .mask>.mask-i{display:inline-block;transform:translateY(115%);
 html.js .hero.is-loaded .mask>.mask-i{transform:none;}
 
 @media (prefers-reduced-motion:reduce){
-  .mq-track{animation:none!important;}
   html.js .mask>.mask-i{transform:none!important;}
 }
 @media print{
@@ -384,6 +376,27 @@ html.js .hero.is-loaded .mask>.mask-i{transform:none;}
 .nb-list{list-style:none;display:flex;flex-direction:column;gap:9px;}
 .nb-list li{position:relative;padding-left:20px;font-size:12.5px;color:var(--mut);line-height:1.6;}
 .nb-list li::before{content:"▸";position:absolute;left:0;top:0;color:var(--gold);font-weight:700;}
+
+
+/* ===== TIMELINE MÉTHODE (façon Agence Short) ===== */
+.scene-flow{position:relative;}
+.scene{position:relative;z-index:1;}
+.scene-flow::before{content:"";position:absolute;left:10mm;top:7mm;bottom:9mm;width:3px;
+  transform:translateX(-50%);background:rgba(132,77,251,.16);border-radius:3px;z-index:0;}
+.tl-fill{position:absolute;left:10mm;top:7mm;width:3px;height:0;transform:translateX(-50%);
+  background:linear-gradient(180deg,var(--gold),var(--gold2),var(--violet));border-radius:3px;z-index:0;
+  box-shadow:0 0 16px rgba(255,190,0,.5);transition:height .12s linear;}
+/* node : ÉTEINT par défaut, ALLUMÉ quand la progression l'atteint */
+.scene__node{color:rgba(249,249,249,.42)!important;background:#170c28!important;
+  border:2px solid rgba(132,77,251,.45)!important;box-shadow:none!important;
+  transition:transform .45s cubic-bezier(.34,1.56,.64,1),background .4s ease,color .4s ease,box-shadow .4s ease,border-color .4s ease!important;}
+.scene.tl-active .scene__node{color:var(--ink)!important;
+  background:linear-gradient(150deg,var(--gold) 0%,var(--gold2) 60%,var(--violet) 140%)!important;
+  border-color:transparent!important;transform:scale(1.09);
+  box-shadow:0 10px 28px rgba(255,190,0,.40),0 0 0 6px rgba(132,77,251,.12),inset 0 1px 0 rgba(255,255,255,.4)!important;}
+@media (max-width:560px){ .scene-flow::before,.tl-fill{left:6.5mm;top:5mm;} }
+@media (max-width:380px){ .scene-flow::before,.tl-fill{left:5.5mm;top:4.5mm;} }
+@media (prefers-reduced-motion:reduce){ .tl-fill{transition:none!important;} }
 </style></head>
 <body><div class="progress"></div>
 <div class="docwrap">
@@ -452,7 +465,7 @@ html.js .hero.is-loaded .mask>.mask-i{transform:none;}
       <span class="sp-eye">DÉROULÉ DU SCRIPT</span>
       <span class="sp-range">SÉQUENCE 1 → 9 · VERBATIM</span>
     </div>
-    <div class="scene-flow">
+    <div class="scene-flow"><div class="tl-fill"></div>
     <article class="scene">
       <div class="scene__rail">
         <div class="scene__node">1</div>
@@ -717,8 +730,23 @@ html.js .hero.is-loaded .mask>.mask-i{transform:none;}
       } }
     var bar=d.querySelector('.progress');
     var pxEls=[].slice.call(d.querySelectorAll('[data-parallax]'));
+    var flow=d.querySelector('.scene-flow'), tlFill=flow&&flow.querySelector('.tl-fill'), sceneEls=[].slice.call(d.querySelectorAll('.scene'));
+    function timeline(){
+      if(!flow||!tlFill) return;
+      var r=flow.getBoundingClientRect(); if(r.height<=0) return;
+      var actLine=root.clientHeight*0.66;
+      var ratio=Math.max(0,Math.min(1,(actLine - r.top)/r.height));
+      tlFill.style.height=(ratio*100).toFixed(2)+'%';
+      for(var i=0;i<sceneEls.length;i++){
+        var nd=sceneEls[i].querySelector('.scene__node'); if(!nd) continue;
+        var nr=nd.getBoundingClientRect();
+        var nRatio=((nr.top+nr.height/2)-r.top)/r.height;
+        if(nRatio<=ratio+0.004){ sceneEls[i].classList.add('tl-active'); } else { sceneEls[i].classList.remove('tl-active'); }
+      }
+    }
     var tick=function(){ var sc=root.scrollTop||d.body.scrollTop||window.pageYOffset||0; var max=root.scrollHeight-root.clientHeight;
       if(bar){ bar.style.width=(max>0?(sc/max*100):0)+'%'; }
+      timeline();
       if(!reduce){
         d.body.style.backgroundPositionY=(sc*0.4).toFixed(1)+'px';
         var vh=root.clientHeight;
@@ -736,8 +764,7 @@ html.js .hero.is-loaded .mask>.mask-i{transform:none;}
       mtrack.innerHTML=''; mtrack.appendChild(half);
       var g=0; while(half.scrollWidth < cw+40 && g<40){ half.innerHTML+=mqBase; g++; }
       mtrack.appendChild(half.cloneNode(true));
-      if(reduce){ mtrack.style.animation='none'; }
-      else { mtrack.style.animationDuration=Math.max(14,Math.round(half.scrollWidth/70))+'s'; }
+      mtrack.style.animationDuration=Math.max(14,Math.round(half.scrollWidth/70))+'s';
     }
     function onResize(){ fit(); buildMarquee(); tick(); }
     fit(); buildMarquee();
