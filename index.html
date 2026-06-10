@@ -140,7 +140,8 @@ body{font-family:'Inter','Noto Color Emoji',sans-serif;color:var(--paper);}
 
 
 /* ===================== MOTION ===================== */
-.progress{position:fixed;top:0;left:0;height:3px;width:0;z-index:999;
+.progress{position:fixed;top:0;left:0;height:3px;width:100%;z-index:999;
+  transform:scaleX(0);transform-origin:left center;will-change:transform;
   background:linear-gradient(90deg,var(--gold),var(--gold2) 50%,var(--violet));
   box-shadow:0 0 14px rgba(255,190,0,.45);}
 @keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
@@ -186,24 +187,26 @@ html.js .scene .scene__head{opacity:0;transform:translateY(10px);
   transition:opacity .6s ease .08s,transform .6s ease .08s;}
 html.js .scene.is-in .scene__head{opacity:1;transform:none;}
 
-/* ===================== HOVER MICRO-INTERACTIONS ===================== */
+/* ===================== HOVER MICRO-INTERACTIONS (souris uniquement) ===================== */
 .scene__node{transition:transform .3s ease,box-shadow .3s ease;}
-.scene:hover .scene__node{transform:scale(1.06);
-  box-shadow:0 10px 30px rgba(132,77,251,.5),inset 0 1px 0 rgba(255,255,255,.5);}
 .line.vo{transition:background .3s ease,border-color .3s ease,transform .3s ease;}
-.line.vo:hover{transform:translateX(3px);border-left-color:var(--gold);
-  background:linear-gradient(90deg,rgba(132,77,251,.2),transparent 85%);}
 .chip{transition:transform .3s ease,border-color .3s ease,box-shadow .3s ease;}
-.chip:hover{transform:translateY(-4px);border-color:var(--gold-bd);box-shadow:0 12px 26px rgba(0,0,0,.35);}
 .lg-card{transition:transform .3s ease,border-color .3s ease;}
-.lg-card:hover{transform:translateY(-3px);border-color:var(--gold-bd);}
 .toc-item{transition:transform .25s ease;}
-.toc-item:hover{transform:translateX(5px);}
 .toc-t{transition:color .25s ease;}
-.toc-item:hover .toc-t{color:var(--gold);}
 .cta-h1{animation:ctaPulse 3.4s ease-in-out infinite;}
 .cta-mono svg{transition:transform .4s ease;}
-.cta-wrap:hover .cta-mono svg{transform:scale(1.04);}
+@media (hover:hover) and (pointer:fine){
+  .scene:hover .scene__node{transform:scale(1.06);
+    box-shadow:0 10px 30px rgba(132,77,251,.5),inset 0 1px 0 rgba(255,255,255,.5);}
+  .line.vo:hover{transform:translateX(3px);border-left-color:var(--gold);
+    background:linear-gradient(90deg,rgba(132,77,251,.2),transparent 85%);}
+  .chip:hover{transform:translateY(-4px);border-color:var(--gold-bd);box-shadow:0 12px 26px rgba(0,0,0,.35);}
+  .lg-card:hover{transform:translateY(-3px);border-color:var(--gold-bd);}
+  .toc-item:hover{transform:translateX(5px);}
+  .toc-item:hover .toc-t{color:var(--gold);}
+  .cta-wrap:hover .cta-mono svg{transform:scale(1.04);}
+}
 
 /* reduced motion + print : tout visible, aucune animation */
 @media (prefers-reduced-motion: reduce){
@@ -333,7 +336,7 @@ html.js .legend-grid .lg-card:nth-child(1){transition-delay:.02s}
 .mq-track span{font-family:'Bebas Neue';font-size:19px;letter-spacing:.14em;color:#FFFFFF;padding:0 16px;white-space:nowrap;}
 .mq-track i{color:#FFFFFF;font-style:normal;font-size:9px;}
 @keyframes mq{from{transform:translateX(0)}to{transform:translateX(-50%)}}
-.marquee:hover .mq-track{animation-play-state:paused;}
+@media (hover:hover) and (pointer:fine){ .marquee:hover .mq-track{animation-play-state:paused;} }
 .aw-logo{display:inline-block;height:14px;line-height:0;vertical-align:-3px;margin:0 3px;}
 .aw-logo svg{height:100%;width:auto;display:block;}
 
@@ -383,14 +386,16 @@ html.js .hero.is-loaded .mask>.mask-i{transform:none;}
 .nb-list li::before{content:"▸";position:absolute;left:0;top:0;color:var(--gold);font-weight:700;}
 
 
+html{-webkit-tap-highlight-color:transparent;}
 /* ===== TIMELINE MÉTHODE (façon Agence Short) ===== */
 .scene-flow{position:relative;}
 .scene{position:relative;z-index:1;}
 .scene-flow::before{content:"";position:absolute;left:10mm;top:7mm;bottom:9mm;width:3px;
   transform:translateX(-50%);background:rgba(132,77,251,.16);border-radius:3px;z-index:0;}
-.tl-fill{position:absolute;left:10mm;top:7mm;width:3px;height:0;transform:translateX(-50%);
+.tl-fill{position:absolute;left:10mm;top:7mm;bottom:9mm;width:3px;transform-origin:top center;
+  transform:translateX(-50%) scaleY(0);
   background:linear-gradient(180deg,var(--gold),var(--gold2),var(--violet));border-radius:3px;z-index:0;
-  box-shadow:0 0 16px rgba(255,190,0,.5);transition:height .12s linear;}
+  box-shadow:0 0 16px rgba(255,190,0,.5);transition:transform .12s linear;will-change:transform;}
 /* node : ÉTEINT par défaut, ALLUMÉ quand la progression l'atteint */
 .scene__node{color:rgba(249,249,249,.42)!important;background:#170c28!important;
   border:2px solid rgba(132,77,251,.45)!important;box-shadow:none!important;
@@ -747,14 +752,14 @@ html.js .hero.is-loaded .mask>.mask-i{transform:none;}
       if(!flow||!tlFill) return;
       var fr=flow.getBoundingClientRect(); if(fr.height<=0) return;
       var ratio=Math.max(0,Math.min(1,(root.clientHeight*0.66 - fr.top)/fr.height));
-      tlFill.style.height=(ratio*100).toFixed(2)+'%';
+      tlFill.style.transform='translateX(-50%) scaleY('+ratio.toFixed(4)+')';
       for(var i=0;i<sceneEls.length;i++){
         var on=nodeRatios[i]<=ratio+0.004, has=sceneEls[i].classList.contains('tl-active');
         if(on&&!has){ sceneEls[i].classList.add('tl-active'); } else if(!on&&has){ sceneEls[i].classList.remove('tl-active'); }
       }
     }
     var tick=function(){ var sc=root.scrollTop||window.pageYOffset||0; var max=root.scrollHeight-root.clientHeight;
-      if(bar){ bar.style.width=(max>0?(sc/max*100):0)+'%'; }
+      if(bar){ bar.style.transform='scaleX('+(max>0?(sc/max):0).toFixed(4)+')'; }
       timeline();
       if(max-sc < 160){ [].forEach.call(d.querySelectorAll('.reveal:not(.is-in)'),function(el){
         el.classList.add('is-in'); if(el.classList.contains('statband')){ [].forEach.call(el.querySelectorAll('[data-to]'),countUp);} }); } };
