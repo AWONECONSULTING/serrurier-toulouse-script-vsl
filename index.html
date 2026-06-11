@@ -248,7 +248,7 @@ html,body{overflow-x:hidden;max-width:100%;overscroll-behavior-x:none;
 
 /* marges & tailles fluides (desktop inchangé via les bornes hautes) */
 .hero{padding:clamp(24px,6vw,26mm) clamp(18px,5vw,22mm) clamp(22px,5vw,22mm);}
-.band{padding:clamp(28px,5vw,16mm) clamp(18px,5vw,18mm);}
+.band{padding:clamp(42px,7vw,16mm) clamp(18px,5vw,18mm);}
 .band--scenes{padding:clamp(24px,4.5vw,14mm) clamp(14px,4.5vw,17mm) clamp(26px,5vw,16mm);}
 .band--cta{padding:clamp(40px,8vw,24mm) clamp(20px,6vw,24mm) clamp(44px,9vw,26mm);}
 .docfoot{padding:6mm clamp(18px,5vw,18mm);flex-wrap:wrap;gap:6px 14px;}
@@ -266,7 +266,8 @@ html,body{overflow-x:hidden;max-width:100%;overscroll-behavior-x:none;
 /* ---- tablette / grand téléphone ---- */
 @media (max-width:780px){
   .meta{grid-template-columns:repeat(2,1fr);}
-  .legend-grid{grid-template-columns:1fr;}
+  .legend-grid{grid-template-columns:1fr;margin-bottom:48px;}
+  .band--legend .band-head{margin-bottom:30px;}
   .ph-sub{max-width:100%;}
 }
 
