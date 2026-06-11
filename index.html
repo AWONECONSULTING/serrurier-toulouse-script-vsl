@@ -54,8 +54,11 @@ body{font-family:'Inter','Noto Color Emoji',sans-serif;color:var(--paper);}
 
 .legend-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;margin-bottom:10mm;}
 .lg-card{padding:15px;border-radius:14px;background:rgba(20,0,20,.5);border:1px solid var(--vio-bd);}
-.lg-card .line{margin:0 0 9px;}
-.lg-card p{font-size:10px;color:var(--mut);line-height:1.5;}
+.lg-card .line{margin:0 0 10px;}
+.lg-card p{margin:0;font-size:10px;color:var(--mut);line-height:1.55;}
+/* carte voix-off : boîte slim (pas de double marge) + taille alignée pour l'harmonie des 3 blocs */
+.lg-card .line.vo{padding:3px 0 3px 14px;}
+.lg-card .line.vo .ltxt{font-size:12px;}
 .line.demo .ltxt{font-size:13px;}
 
 .ix-head{display:flex;align-items:center;gap:12px;margin-bottom:9px;}
